@@ -78,10 +78,36 @@ The expected value of `\(Y_t\)` can be solved from
 
 `$$\begin{equation*} E(Y_t)=\delta+\theta E(Y_{t-1}) \end{equation*}$$`
 
+--
+
 which, assuming that `\(E(Y_t)\)` does not depend upon `\(t\)`, allows us to write 
 
+--
+
 `$$E(Y_t)=E(Y_{t-1})=\mu \label{}$$`
+
+--
+
+Using the above assumption, 
+
+--
+
+`$$\begin{equation}
+    \mu=\delta+\theta\mu \\
+    \mu - \theta \mu = \delta \\
+    \mu(1-\theta)= \delta \\
+    \mu =\frac{\delta}{1-\theta}
+\end{equation}$$`
+
+--
+
 Remember, this is only true if `\(Y_t\)` is stationary, that means it's statistical property does not depend on a particular time period, in other words, the mean is constant. We will also write `\(y_t=Y_t-\mu\)`. Now it follows that 
+
+---
+
+Continuing on,
+
+--
 
 `$$\begin{gather*}
     y_t+\mu=\delta+\theta (y_{t-1}+\mu)+\varepsilon \\ 
@@ -130,13 +156,21 @@ Then we can write,
     E(y_t)=0
 \end{gather*}$$`
 
+Exaplanation: 
+
+`$$E(y_t) (1-\delta) = 0$$`
+
+If   `\(\delta\neq 1\)` then `\(1-\delta\neq 0\)`
+If `\(1-\delta\neq 0\)`   then `\(E(y_t) =0\)`  
+
+
 ---
 
 * Above results show that `\(y_t\)` has a zero mean. But to have a non-zero mean we can add an intercept. 
 
 --
 
-* We also here note that `\(V(Y_t)=V(y_t)\)`. 
+* We also here note that `\(V(y_t)=V(y_t)\)`. 
 
 --
 
@@ -188,24 +222,7 @@ First let's derive the variance:
 
 Therefore, we can write
 
---
-
-`$$\begin{equation}\label{eqst1}
-		Var(Y_t)=Var(Y_{t-1})
-	\end{equation}$$`
-
-`$$\begin{equation}
-		Var(Y_t)=\theta^2 Var(Y_{t-1}) + Var(\varepsilon_t) 
-	\end{equation}$$`
-
-`$$\begin{equation}
-		Var(Y_t)=\theta^2 Var(Y_{t-1}) + Var(\varepsilon_t) 
-	\end{equation}$$`
-
-`$$\begin{equation} 
-    Var(Y_{t}) = \theta^2 Var(Y_{t-1}) + Var(\varepsilon_t)
-\end{equation}$$`
-	    
+    
 Here we assume that `\(Cov(Y_{t-1} \varepsilon_t)=0\)`. Now, this is not too unrealistic in the sense that error at current period might not be correlated with the endogenous variable in the past.Now it's time to impose one of the stationarity condition, namely, variance of the time series process does not depend on time:
 
 `$$\begin{equation}\label{eqst}
@@ -217,13 +234,13 @@ Here we assume that `\(Cov(Y_{t-1} \varepsilon_t)=0\)`. Now, this is not too unr
 Now using above equations,
 
 `$$\begin{gather}
-    Var(Y_t) =\theta^2 Var(Y_t)+ \sigma^2 \quad \text{by} \quad Var(Y_t)=\sigma^2\\
+    Var(Y_t) =\theta^2 Var(Y_t)+ \sigma^2 \quad \text{by} \quad Var(\varepsilon_t)=\sigma^2\\
 		\text{or,} \quad Var(Y_t)(1-\theta^2) =\sigma^2\\
 		\text{or,} \quad Var(Y_t) =\frac{\sigma}{1-\theta^2} \label{eqvar2}
 \end{gather}$$`
 
 
-We see from the above equation  that `\(Var(Y_t)\)` is indeed constant. We also see from \eqref{eqvar2} that we can only impose `\(Var(Y_t)=Var(Y_{t+1}\)` if `\(|\theta|&lt;1\)` . This is the assumption we madel previously.This is actually the essence of \texttt{Dickey-Fuller} test which tests whether this coefficient is less than one or not. 
+We see from the above equation  that `\(Var(Y_t)\)` is indeed constant. We also see from above that we can only impose `\(Var(Y_t)=Var(Y_{t+1}\)` if `\(|\theta|&lt;1\)` . This is the assumption we madel previously.This is actually the essence of `\(\texttt{Dickey-Fuller}\)` test which tests whether this coefficient is less than one or not. 
 
 ---
 
@@ -235,7 +252,9 @@ Now let's find the `\(Covariance\)` between `\(Y_t\)` and `\(Y_{t-1}\)`
     \begin{split} 
 	Cov(Y_t,Y_{t-1}) &amp; =E(Y_t-E(Y_t))E(Y_{t-1}-E(Y_{t-1})) \\ 
 		     &amp; =E((Y_t-\mu)(Y_{t-1}-\mu))  \quad \because \quad E(Y_t)=E(Y_{t-1})=\mu \\
-                     &amp; =\theta (E(y_{t-1})^2+E(\varepsilon_t y_{t-1}) \quad \text{by the definition of Yt}\\
+		     &amp; =E(y_t y_{t-1}) \quad \text{by the definition of}\quad y_t\\
+		     &amp; =E((\theta y_{t-1}+\varepsilon_t)(y_{t-1})) \because \, y_t=\theta y_{t-1}+\varepsilon_t \\
+                     &amp; =\theta (E(y_{t-1})^2+E(\varepsilon_t y_{t-1}) \\
 		     &amp; =\theta \, E(Y_{t-1}-\mu)^2+E(\varepsilon_t y_{t-1})\\
 		     &amp; =\theta \, Var(Y_t)+E((\varepsilon_t-E(\varepsilon_t)) (Y_{t-1}-\mu))\\
 		     &amp; =\theta \, Var(Y_t)+Cov(\varepsilon_t,Y_t)\\
@@ -261,7 +280,7 @@ Now let's take some higher order lags. Let's see what would be the covariance be
 		Cov(Y_t,Y_{t-2}) &amp; =E(Y_t-E(Y_t))E(Y_{t-2}-E(Y_{t-2}))\\
 		&amp; =E((Y_t-\mu)(Y_{t-2}-\mu))\quad \because \quad E(Y_t)=E(Y_{t-2})=\mu\\
 		&amp; =E(y_t\, y_{t-2})\quad \text{by the definition of} Y_t\\
-\text{Before continuing we have to figure out} y_t\\
+\text{Before continuing we have to figure out} \, y_t\\
 		y_t &amp; =\theta y_{t-1}+\varepsilon_t\\
 		&amp; =\theta (\theta y_{t-2}+\varepsilon_{t-1})+\varepsilon_t\\
 		&amp; =\theta^2 y_{t-2}+\theta \varepsilon_{t-1}+\varepsilon_t\\
@@ -270,17 +289,19 @@ Now let's take some higher order lags. Let's see what would be the covariance be
 		&amp; =\theta^2 (E(y_{t-2})^2+E(\varepsilon_{t-1} y_{t-2})+E(\varepsilon_t y_{t-2}))\\
 		&amp; =\theta^2 \, E(Y_{t-2}-\mu)^2+Cov(\varepsilon_{t-1},y_{t-2})+Cov(\varepsilon_t,y_{t-2})\\
 		&amp; =\theta^2 \, Var(Y_t)\quad \because \quad Cov(\varepsilon_t,Y_{t-k})=0\\
-		&amp; =\theta^2 \, \frac{\sigma^2}{1-\theta^2}\\
-\text{Therefore we see that,}
-&amp; Cov(Y_t,Y_{t-1}) =\theta \frac{\sigma^2}{1-\theta^2}\\
-&amp; Cov(Y_t,Y_{t-2}) =\theta^2 \frac{\sigma^2}{1-\theta^2}\\
-\vdots\\
-&amp; Cov(Y_t,Y_{t-k}) =\theta^k \frac{\sigma^2}{1-\theta^2}
+		&amp; =\theta^2 \, \frac{\sigma^2}{1-\theta^2}
 		\end{split}
-		\label{eqcovk}
 \end{equation}$$`
-	
+
 ---
+
+`$$\begin{equation}
+    \text{Therefore we see that,} \\
+     Cov(Y_t,Y_{t-1}) =\theta \frac{\sigma^2}{1-\theta^2}\\
+     Cov(Y_t,Y_{t-2}) =\theta^2 \frac{\sigma^2}{1-\theta^2}\\
+    \vdots \\
+     Cov(Y_t,Y_{t-k}) =\theta^k \frac{\sigma^2}{1-\theta^2}
+\end{equation}$$`
 
 We have the following observation from the above Covariance formula
 
