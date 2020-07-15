@@ -1,3 +1,4 @@
+
 class: inverse,middle,center
 
 # Moving Average Models
@@ -12,7 +13,7 @@ $$\begin{equation}
     Y_t=\mu+\varepsilon_t+\alpha \varepsilon_{t-1}
 \end{equation}$$
 
-In above equation, $Y_t$ is sum of constant mean plus weighted average of current and past error. Why this is called weighted average? I am not sure at this point. Usually weighted average is in the form of $\alpha \varepsilon+(1-\alpha) \varepsilon$ form. But in the above equation, it's not like that. I have to look further into it. Basically the values of $Y_t$ are defined in terms of drawings from White Noise processes $\varepsilon_t$. 
+In above equation, $Y_t$ is sum of constant mean plus weighted average of current and past error. Usually weighted average is in the form of $\alpha \varepsilon+(1-\alpha) \varepsilon$ form. I have to look further into it. Basically the values of $Y_t$ are defined in terms of drawings from White Noise processes $\varepsilon_t$. 
 
 ---
 
@@ -59,6 +60,139 @@ The equation above implies that $AR(1)$ and $MA(1)$ has very different autocovar
 
 ---
 
+## MA(1) simulation
+
+Let's simulate MA(1)
+
+```{r}
+set.seed(1)
+x.ma <- w <- rnorm(100)
+for (t in 2:100) x.ma[t]  <- w[t] + 0.7 * w[t-1] 
+```
+
+
+```{r, out.width="70%"}
+plot(x.ma,type="l")            
+```
+
+---
+
+.pull-left[
+
+```{r}
+acf(x.ma)
+```
+           
+]
+.pull-right[
+
+```{r}
+pacf(x.ma)
+
+```
+]
+
+---
+
+## Model fitted to simulated MA(1)
+
+```{r}
+x.ma.ts <- ts(x.ma, st=1980, frequency=12)
+plot(x.ma.ts)
+```
+
+---
+
+```{r}
+library(forecast)
+auto.arima(x.ma.ts)
+```
+
+
+---
+
+class: inverse,middle,center 
+
+# MA(q) process: Definition and properties 
+
+---
+
+## MA process
+
+A moving average (MA) process of order $q$ is a linear combination of the current white noise term
+
+The q most recent past white noise terms and is defined by
+$$y_t=e_t+\beta_1e_{t-1}+\ldots+\beta_1e_{t-q}$$ 
+
+Here ${e_t}$ is white noise with zero mean and variance $\sigma_e^2$. 
+
+---
+
+
+## MA equation with backshift operator
+
+The above equation can be rewritten in terms of the backward shift operator `B`
+
+$$y_t=(1+\beta_1B+\beta_2B^2+\ldots+\beta_qB^q)e_t=\phi_q(B)w_t$$ 
+
+Here $\phi_q$ is a polynomial of order $q$. 
+
+MA processes consist of a finite sum stationary white noise terms 
+
+They are stationary and hence have a time-invariant mean and autocovariance 
+
+---
+
+## Mean and variance of MA(q) process
+
+The mean and variance for ${x_t}$ are easy to derive 
+
+The mean is just zero because it is a sum of terms that all have a mean of zero 
+
+The variance is $\sigma{^2}_{e}(1+\beta_1^2+\ldots+\beta^2_q)$ 
+
+Each of the white noise terms has the same variance and the terms are mutually independent. 
+
+---
+
+## ACF of MA(q) process
+
+* As we have previously seen, `Autocorrelation` as a function of lag order $(k)$ is called $autocorrelation function$ or $ACF$ 
+* ACF plays a major role in understanding a time series. 
+* It tells us how deep is the memory of the underlying stochastic process. 
+* If it has long memory, as in the case of $AR(1)$, we would see that value of $\rho_k$ does not diminish to zero with increasing value of $k$ as quickly as the $MA(1)$ does.
+* We already have seen previously that covariance between two periods, in a $MA(1)$ process, reduces to zero if  lag is just more than one period. 
+* Therefore by looking into the ACF we can have a fair idea about the underlying time series stochastic process. 
+
+
+---
+
+In the case of $MA(1)$
+
+$$\begin{align}
+	\gamma_1 & =Cov(Y_t,Y_{t-1})=\alpha \sigma^2,\quad 
+	\text{and}\\
+	\gamma_0 & =Var(Y_t)= \sigma^2 (1+\alpha^2) \\
+	\text{Therefore, from the above two we can write}
+	\rho_1 & =\frac{\gamma_1}{\gamma_0} \\
+	&=\frac{\alpha \cancel{\sigma^2}}{\cancel{\sigma^2}(1+\alpha^2)} 
+	&=\frac{\alpha}{1+\alpha^2}
+	\label{}
+\end{align}$$
+
+And in the case of $k \ge 2 $, we have also seen that $\gamma_k=0 \quad \forall k$. Therefore,
+
+$$\begin{equation}
+	\rho_k=0 \quad \forall \quad k
+	\label{}
+\end{equation}$$
+
+
+Implication of the above derivation is that, a shock in $MA(1)$ will only last two period, $Y_t$ and $Y_{t-1}$ while  a shock in $AR(1)$ will affect all future observations with a decreasing effect, since $|\theta|<1$.
+
+---
+
+
 ## Comparing AR(1) and MA(1)
 
 We can generalize $AR(1)$ and $MA(1)$ by adding additional lag terms. In general, there is little difference between these two models. We express$\mathbf{AR(1)}$  as$\mathbf{MA(1)}$ by repeated substitution.We can rewrite \texttt{AR(1)} as an infinite order of moving average. We can see this in the following:
@@ -102,4 +236,7 @@ $$\begin{align}
 		&=\sigma_0+\sigma_1 Y_{t-1}+\sigma_2 Y_{t-2}
 		\label{}
 \end{align}$$
+
+---
+
 

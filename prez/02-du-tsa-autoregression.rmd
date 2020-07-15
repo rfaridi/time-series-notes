@@ -207,7 +207,8 @@ Now using above equations,
 $$\begin{gather}
     Var(Y_t) =\theta^2 Var(Y_t)+ \sigma^2 \quad \text{by} \quad Var(\varepsilon_t)=\sigma^2\\
 		\text{or,} \quad Var(Y_t)(1-\theta^2) =\sigma^2\\
-		\text{or,} \quad Var(Y_t) =\frac{\sigma}{1-\theta^2} \label{eqvar2}
+		\text{or,} \quad Var(Y_t) =\frac{\sigma}{1-\theta^2} \\
+		\text{or,}   \gamma_0 = \frac{\sigma}{1-\theta^2}
 \end{gather}$$
 
 
@@ -237,8 +238,7 @@ $$\begin{equation}
 So, we have established that 
 
 $$\begin{equation}
-	Cov(Y_t,Y_{t-1})=\theta \frac{\sigma^2}{1-\theta^2}
-	\label{eqcov2}
+	Cov(Y_t,Y_{t-1})=\gamma_1=\theta \frac{\sigma^2}{1-\theta^2}
 \end{equation}$$
 
 ---
@@ -268,10 +268,10 @@ $$\begin{equation}
 
 $$\begin{equation}
     \text{Therefore we see that,} \\
-     Cov(Y_t,Y_{t-1}) =\theta \frac{\sigma^2}{1-\theta^2}\\
-     Cov(Y_t,Y_{t-2}) =\theta^2 \frac{\sigma^2}{1-\theta^2}\\
+     Cov(Y_t,Y_{t-1}) = \gamma_1=\theta \frac{\sigma^2}{1-\theta^2} = \theta \gamma_0\\
+     Cov(Y_t,Y_{t-2}) =\gamma_2=\theta^2 \frac{\sigma^2}{1-\theta^2} = \theta^2 \gamma_0\\
     \vdots \\
-     Cov(Y_t,Y_{t-k}) =\theta^k \frac{\sigma^2}{1-\theta^2}
+     Cov(Y_t,Y_{t-k}) =\gamma_k=\theta^k \frac{\sigma^2}{1-\theta^2} = \theta^k \gamma_0
 \end{equation}$$
 
 We have the following observation from the above Covariance formula
@@ -281,5 +281,123 @@ We have the following observation from the above Covariance formula
 * Since the value of $|\theta|<1$, this correlation diminishes in higher degree of lag-order. This is quite intuitive as itis natural to have weakerza correlation among values whic are far apart. 
 * Covariance between any two time periods does not depend on any of the time periods.Rather it depends on how far they are apart, which is determined by $k$. This is one of the primary features of stationary time series. 	
 
+---
+
+## Autocorrelation function 
+
+The autocorrelation function can be defined as the following: 
+
+$$\begin{equation}
+ \begin{split}
+ \rho_k &= \frac{Cov(Y_t,Y_{t-k})}{\sqrt{Var(Y_t)} \sqrt{Var(Y_{t-k})}} \\
+       &= \frac{Cov(Y_t,Y_{t-k})}{\sqrt{Var(Y_t)} \sqrt{Var(Y_t)}} \because  Var(y_t)=Var(Y_{t-k}) \\
+       &= \frac{Cov(Y_t,Y_{t-k})}{Var(Y_t)} \\ 
+       &=\frac{\theta^k*\frac{\sigma^2}{1-\theta^2}}{\frac{\sigma^2}{1-\theta^2}} \\
+\rho_k &=\theta^k
+ \end{split}
+\end{equation}$$
+
+Alternative formulation
+
+$$\begin{equation}
+ \begin{split}
+ \rho_k &= \frac{Cov(Y_t,Y_{t-k})}{\sqrt{Var(Y_t)} \sqrt{Var(Y_{t-k})}} \\
+       &= \frac{Cov(Y_t,Y_{t-k})}{\sqrt{Var(Y_t)} \sqrt{Var(Y_t)}} \because  Var(y_t)=Var(Y_{t-k}) \\
+       &= \frac{\gamma_k}{gamma_0} \\ 
+       &=\frac{\theta^k \gamma_0}{\gamma_0} \\
+\rho_k &=\theta^k
+ \end{split}
+\end{equation}$$
+
+
+
+
+---
+
+## R Simulation
+
+```{r}
+rho <- function(k,alpha) alpha^k
+```
+
+.pull-left[
+
+```{r, out.width="100%"}
+y <- rho(0:10, 0.7)
+plot(0:10, y, type="b")
+```
+$$y_t=0.7y_{t-1}+e_t$$
+
+]
+.pull-right[
+
+```{r,out.width="100%"}
+x <- rho(0:10, -0.7)
+plot(0:10, y, type="b")
+```
+$$y_t=-0.7y_{t-1}+e_t$$
+]
+
+
+---
+
+## AR(1) simulation
+
+Let's simulate AR(1)
+
+```{r}
+set.seed(1)
+y.ar <- e <- rnorm(100)
+for (t in 2:100) y.ar[t]  <- 0.7 * y.ar[t-1] +e[t]
+```
+
+
+```{r, out.width="70%"}
+plot(y.ar,type="l")            
+```
+
+---
+
+.pull-left[
+
+```{r, out.width="100%"}
+acf(y.ar)
+```
+           
+]
+.pull-right[
+
+```{r , out.width="100%"}
+pacf(y.ar)
+
+```
+]
+
+---
+
+## Model fitted to simulated AR(1)
+
+Let's use the `ar()` function to our simulated data 
+
+```{r}
+y.ar.mod <- ar(y.ar, method="mle")
+y.ar.mod$order
+```
+The model correctly find the right order 1
+
+```{r}
+y.ar.mod$ar
+```
+
+Let's find the confidence interval for the coefficient
+
+```{r}
+y.ar.mod$ar + c(-2,2) * sqrt(y.ar.mod$asy.var)
+```
+
+```{r}
+y.ar.ts <- ts(y.ar, start=1980, frequency = 12)
+auto.arima(y.ar.ts)
+```
 ---
 
