@@ -287,6 +287,8 @@ We have the following observation from the above Covariance formula
 
 The autocorrelation function can be defined as the following: 
 
+.pull-left[
+
 $$\begin{equation}
  \begin{split}
  \rho_k &= \frac{Cov(Y_t,Y_{t-k})}{\sqrt{Var(Y_t)} \sqrt{Var(Y_{t-k})}} \\
@@ -297,19 +299,22 @@ $$\begin{equation}
  \end{split}
 \end{equation}$$
 
+]
+.pull-right[
+
 Alternative formulation
 
 $$\begin{equation}
  \begin{split}
  \rho_k &= \frac{Cov(Y_t,Y_{t-k})}{\sqrt{Var(Y_t)} \sqrt{Var(Y_{t-k})}} \\
        &= \frac{Cov(Y_t,Y_{t-k})}{\sqrt{Var(Y_t)} \sqrt{Var(Y_t)}} \because  Var(y_t)=Var(Y_{t-k}) \\
-       &= \frac{\gamma_k}{gamma_0} \\ 
+       &= \frac{\gamma_k}{\gamma_0} \\ 
        &=\frac{\theta^k \gamma_0}{\gamma_0} \\
 \rho_k &=\theta^k
  \end{split}
 \end{equation}$$
 
-
+]
 
 
 ---
