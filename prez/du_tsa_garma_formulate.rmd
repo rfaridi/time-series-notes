@@ -1,6 +1,21 @@
-## Formulating ARMA process
+class: inverse,middle,center 
 
-In this section, we start to define more general autoregressive and moving average process. First we define a moving average of order q:
+# Formulating ARMA process
+
+---
+
+In this section, we start to define more general autoregressive and moving average process. In previous section, we have already observed a general framework of $MA(q)$ model.
+
+Obviously it is very much possible to combine the $MA(q)$ and $AR(p)$ and come up with a $ARMA(p,q)$ specification of the following form:
+
+$$\begin{equation}
+    y_t=\theta_1 y_{t-1}+\theta_2 y_{t-2}+\dotsb+\theta_p y_{t-p}+\varepsilon_t+\alpha \varepsilon_{t-1}+\dotsb+\alpha_q \varepsilon_{t-q}
+\end{equation}$$
+
+???
+Now, the next million dollar question is  when to choose an $AR$, $MA$ or $ARMA$  Verbeek remains quite vague about this at this point. He says, $AR$ and $MA$ basically same time of series. It's just a matter of parsimony. What's the meaning of this? We have previously seen that $AR(1)$ can be expressed as infinte lag order of $MA$ series. So, what does parsimony means here? Does this mean that if we weant a smaller model then we choose $AR(1)$ over infinite order $MA$? Verbeek says it will be clear later. At this point, it is difficult to know. We will postpone the discussion for now, come back to it later. Now we will talk briefly on $\textbf{Lag Operator}$.
+
+This is just an example of $MA(q)$
 
 $$\begin{equation}
 	y_t=\varepsilon_t+\alpha_1 \varepsilon_{t-1}+\alpha_2 \varepsilon_{t-2}+\dotsb+\alpha_q \varepsilon_{t-q}
@@ -14,16 +29,6 @@ $$\begin{equation}
     y_t=\theta_1 y_{t-1}+\theta_2 y_{t-2}+\theta_3 y_{t-3}+\dotsb+\theta_p y_{t-p}+\varepsilon_t
     \label{eq:arq}
 \end{equation}$$
-
----
-
-Obviously it is very much possible to combine the $MA(q)$ and $AR(p)$ and come up with a $ARMA(p,q)$ specification of the following form:
-
-$$\begin{equation}
-    y_t=\theta_1 y_{t-1}+\theta_2 y_{t-2}+\dotsb+\theta_p y_{t-p}+\varepsilon_t+\alpha \varepsilon_{t-1}+\dotsb+\alpha_q \varepsilon_{t-q}
-\end{equation}$$
-
-Now, the next million dollar question is  when to choose an $AR$, $MA$ or $ARMA$  Verbeek remains quite vague about this at this point. He says, $AR$ and $MA$ basically same time of series. It's just a matter of parsimony. What's the meaning of this? We have previously seen that $AR(1)$ can be expressed as infinte lag order of $MA$ series. So, what does parsimony means here? Does this mean that if we weant a smaller model then we choose $AR(1)$ over infinite order $MA$? Verbeek says it will be clear later. At this point, it is difficult to know. We will postpone the discussion for now, come back to it later. Now we will talk briefly on $\textbf{Lag Operator}$.
 
 ---
 
@@ -53,7 +58,7 @@ $$\begin{equation}
 
 ---
 
-We can refer to \ref{eq:eqL} as follows: here, $y_t$ and it's one period lag $y_{t-1}$ , on the right hand side, is a combination with weights of 1 and $-\theta(L)$ and equals a white noise process ($\varepsilon_t$). In general, we can write $AR(p)$ as follows:
+We can refer to above equation as follows: here, $y_t$ and it's one period lag $y_{t-1}$ , on the right hand side, is a combination with weights of 1 and $-\theta(L)$ and equals a white noise process ($\varepsilon_t$). In general, we can write $AR(p)$ as follows:
 
 $$\begin{equation}
     \theta(L)y_t=\varepsilon_t
@@ -61,7 +66,7 @@ $$\begin{equation}
 \end{equation}$$
 
 
-Here $\theta(L)$ is a polynomial\footnote{What's the definition of polynomila?} of order $p$ . I think $\theta(L)$ is some kind of function of $L$. We could write it like $f(L)$. Writing it like $\theta(L)$ creates some confusion because there is also $\theta$ in the function. Now, $\theta(L)$ can be expressed as: 
+Here $\theta(L)$ is a polynomial $\footnote{What's the definition of polynomila?}$ of order $p$ .  $\theta(L)$ is a function of $L$. We could write it like $f(L)$. Now, $\theta(L)$ can be expressed as: 
 
 $$\begin{equation}
     \theta(L)=1-\theta L -\theta_2 L^2-\dotsb-\theta_p L^p
@@ -74,9 +79,8 @@ We can interpret lag polynomial as a filter. When we apply it to a time series, 
 
 ## Characteristics of Lag Polynomial
 
-Suppose we apply a lag polynomial to a time series. Then we apply another lag polynomial on the top of that series. This is equivalent to applying product of two lag polynomial on the original series. We can also define the inverse of a filter, which is the inverse of polynomial. The inverse of $\theta(L)$ is $\theta^{-1}(L)$ and we can write $\theta(L) \theta^{-1}(L)=1$ . Now the following statement I really don't understand. 
+Suppose we apply a lag polynomial to a time series. Then we apply another lag polynomial on the top of that series. This is equivalent to applying product of two lag polynomial on the original series. We can also define the inverse of a filter, which is the inverse of polynomial. The inverse of $\theta(L)$ is $\theta^{-1}(L)$ and we can write $\theta(L) \theta^{-1}(L)=1$ . 
 
-If $\theta(L)$ is a finite order polynomial, then $\theta{-1}L$ is a infinite order polynomial in $L$. It also goes onto claim that
 
 $$\begin{equation}
     (1-\theta L)^{-1}=\sum_{j=0}^{\infty}\theta^j L^j
@@ -93,6 +97,11 @@ $$\begin{align}
     \label{eq:eqthet}
 \end{align}$$
 
+???
+Now the following statement I really don't understand. 
+
+If $\theta(L)$ is a finite order polynomial, then $\theta{-1}L$ is a infinite order polynomial in $L$. 
+
 ---
 
 Now let's see this version:
@@ -108,7 +117,7 @@ $$\begin{align}
     \label{eqthl}
 \end{align}$$
 
-Now, we have seen in \ref{eq:eqL} that $(1-\theta L)y_t=\varepsilon_t$. 
+Now, we have seen in the above equation that $(1-\theta L)y_t=\varepsilon_t$. 
 
 ---
 
@@ -199,6 +208,6 @@ y_t  =\theta^{-1}(L) \alpha (L) \varepsilon_t \\
     \label{eq:eqpararma}
 \end{gather}$$
 
-
+---
 
 

@@ -44,10 +44,10 @@ library(forecast)
 ```{r child='./03-du-tsa-moving-avg.rmd', eval=T}
 ```
 
-```{r child='./du_tsa_garma_formulate.rmd', eval=F}
+```{r child='./du_tsa_garma_formulate.rmd', eval=T}
 ```
 
-```{r child='./du_tsa_garma_invertibility.rmd', eval=F}
+```{r child='./du_tsa_garma_invertibility.rmd', eval=T}
 ```
 
 ```{r child='./du_tsa_garma_mixed.rmd', eval=F}
