@@ -1,0 +1,448 @@
+# AR models 
+
+
+Let's reproduce the AR simulation in presentation 
+
+## AR(1) simulation
+
+Let's simulate AR(1)
+
+```{r}
+set.seed(1)
+y.ar <- e <- rnorm(100)
+for (t in 2:100) y.ar[t]  <- 0.7 * y.ar[t-1] +e[t]
+```
+
+
+```{r, out.width="70%"}
+plot(y.ar,type="l")            
+```
+
+
+
+```{r, out.width="100%"}
+acf(y.ar)
+```
+           
+
+```{r , out.width="100%"}
+pacf(y.ar)
+```
+
+
+## Model fitted to simulated AR(1)
+
+Let's use the `ar()` function to our simulated data 
+
+```{r}
+y.ar.mod <- ar(y.ar, method="mle")
+y.ar.mod$order
+```
+The model correctly find the right order 1
+
+```{r}
+y.ar.mod$ar
+```
+
+Let's find the confidence interval for the coefficient
+
+```{r}
+y.ar.mod$ar + c(-2,2) * sqrt(y.ar.mod$asy.var)
+```
+
+```{r}
+y.ar.ts <- ts(y.ar, start=1980, frequency = 12)
+auto.arima(y.ar.ts)
+```
+
+## Reproduce with simts package
+
+
+```{r}
+set.seed(1)
+true_model=AR(phi=0.70,sigma2=1) 
+y.ar.sim <- gen_gts(n=100,model=true_model)
+```
+
+Let's have a look at pacf
+
+```{r}
+acf(y.ar.sim)
+pacf(y.ar.sim)
+```
+
+Then use the select method 
+
+```{r}
+select(AR(10), y.ar.sim, include.mean=F)
+```
+
+We find that all the criteria selected lag of order 1
+
+Let's estimate that model
+
+```{r}
+y.est <- estimate(AR(1), y.ar.sim)
+```
+
+Now build the confidence interval 
+
+```{r}
+y.est$mod$coef[["ar1"]] + c(1.96,-1.96) * sqrt(y.est$mod$var.coef[1,1])
+```
+
+We find that the confidence interval contains the true value
+
+
+
+Now let's try another model which AR(3)
+
+```{r}
+set.seed(1)
+true_model = AR(phi = c(1.2, -0.9, 0.3), sigma2 = 1)
+y.ar3 = gen_gts(n = 500, model = true_model)
+```
+
+Let's have a look at acf and pacf
+
+```{r}
+acf(y.ar3)
+pacf(y.ar3)
+```
+
+Now let's use select 
+
+```{r}
+select(AR(10), y.ar3, include.mean = F)
+```
+
+In the above we find that all of the measures are selecting the 3
+
+```{r}
+y.ar3.est <- estimate(AR(3), y.ar3)
+y.ar3.est$mod$coef
+var.coef <- diag(y.ar3.est$mod$var.coef)[1:3]
+sd.coef.mat <- matrix(sqrt(var.coef),ncol=1)
+```
+
+Let's find some matrices 
+
+
+```{r}
+crit <- matrix(c(-2,2),nrow=1)
+coefs <- rep(y.ar3.est$mod$coef[1:3],2) %>% 
+                matrix(ncol=2)
+coefs + sd.coef.mat %*% crit
+```
+
+Let's apply auto.arima
+
+```{r}
+y.ar3.ts <- ts(y.ar3, start=1980, frequency = 12)
+auto.arima(y.ar3.ts)
+```
+
+Above auto.arima() function is no longer needed. It has been replaced by `fable` package `ARIMA` function
+
+
+Let's try `tidyverts` framework
+
+```{r}
+y.ar3.tsl <- as_tsibble(y.ar3.ts)
+fit  <- y.ar3.tsl %>% 
+          model(ARIMA(value ~  PDQ(0,0,0)))
+report(fit)
+
+y.ar3.tsl <- as_tsibble(y.ar3.ts)
+fit2  <- y.ar3.tsl %>% 
+          model(ARIMA(value ~ pdq(3,0,0)+ PDQ(0,0,0)))
+report(fit2)
+```
+
+According to documentation, pdq() specifies non-seasonal order whereas
+PDQ() 
+
+
+There seems to be arima.sim() function in `stats` packcage
+
+```{r}
+set.seed(1)
+rw <- arima.sim(list(order = c(0,1,0)), n = 200)
+wn <- arima.sim(list(order = c(0,0,0)), n = 200)
+ar1 <- arima.sim(list(order = c(1,0,0),ar=0.7), n = 200)
+
+ar1.tsb <- as_tsibble(ar1)
+
+ar1.est <- ar1.tsb %>% 
+                model(AR(value ~ order(1)))
+ar1.est  %>% 
+    coef()
+
+ar1.est  %>% 
+    tidy()
+
+ar1.est  %>% 
+    glance()
+
+
+ar1.est  %>% 
+    hilo()
+```
+
+
+## Time series observations simulation 
+
+
+### AR1 whole distribution simulation
+
+```{r}
+ar1.s100 <- do(100) * arima.sim(list(order = c(1,0,0),ar=0.7), n = 1000)
+rownames(ar1.s100)=paste0("sim",rownames(ar1.s100))
+names(ar1.s100)=paste0("t",1:ncol(ar1.s100))
+
+ar1.s100.t <- ar1.s100 %>%
+   tibble::rownames_to_column() %>%  
+   pivot_longer(-rowname) %>% 
+   pivot_wider(names_from=rowname, values_from=value) 
+
+ar1.s100.t %>% 
+    rowwise() %>% 
+    mutate(mu=mean(c_across(sim1:sim100))) %>% 
+    select(time=name, mu)  -> ar1.s100.mu
+
+ar1.s100.mu %>% 
+    ggplot() +
+      geom_line(aes(x=time,y=mu), group="") +
+      ylim(-1,1)
+```
+
+What we find is that mean is not constant
+
+Now we rather try to generate a normal distribution with known mean
+
+### Normal distribution whole distribution simulation
+
+```{r}
+norm.s100 <- do(100) * rnorm(1000, mean=5, sd=1) 
+rownames(norm.s100)=paste0("t",1:nrow(norm.s100))
+names(norm.s100)=paste0("sim",1:ncol(norm.s100))
+norm.s100.t <- norm.s100 %>%
+   tibble::rownames_to_column() %>%  
+   pivot_longer(-rowname) %>% 
+   pivot_wider(names_from=rowname, values_from=value) 
+
+norm.s100 %>% 
+    rowwise() %>% 
+    transmute(mu=mean(c_across(sim1:sim100))) %>% 
+    rownames_to_column("time") -> norm.s100.mu
+
+norm.s100.mu %>% 
+    ggplot() +
+      geom_line(aes(x=time,y=mu), group="") +
+      ylim(0,10)
+```
+
+What we find is that mean is not constant
+
+Now we rather try to generate a normal distribution with known mean
+
+
+
+
+# VAR from ITSR 
+
+```{r}
+library(tidyverse)
+library(tsibble)
+library(feasts)
+```
+
+
+Chpater 11 in ITSR
+
+```{r}
+www <- "~/github_repos/Times-series/Misc/itsr_data/cbe.dat"
+cbe <- read.table(www, header = T)
+```
+
+Let's convert this into tsibble 
+
+```{r}
+cbe.ts <- ts(cbe, start=1958, freq=12) %>% 
+             as_tsibble()
+```
+
+Let's plot 
+
+```{r}
+cbe.ts %>% 
+    autoplot(value)
+```
+
+Here is 
+
+```{r}
+library(mvtnorm)
+```
+Here we go
+
+```{r}
+cov.mat <- matrix(c(1, 0.8, 0.8, 1), nr = 2)
+w <- rmvnorm(1000, sigma = cov.mat)
+cov(w)
+wx <- w[,1]
+wy <- w[,2]
+```
+
+We create wn series with simts 
+
+```{r}
+x.wn <- gen_gts(1000,WN(sigma2=1))
+y.wn <- gen_gts(1000,WN(sigma2=1))
+wn <- gen_gts(1000,WN(sigma2=1))
+var.x=0.4*lag(x.wn)+0.3*lag(y.wn)+ wx
+var.y=0.2*lag(x.wn)+0.1*lag(y.wn)+ wy
+var.xy <- cbind(var.x, var.y)
+colnames(var.xy)  <- c("x","y")
+var.xy <- var.xy[2:nrow(var.xy),]
+xy.ar <- ar(var.xy)
+xy.ar$ar
+```
+Let's try this 
+
+```{r}
+x.ar <- gen_gts(1000,AR1(phi=.32,sigma2=1))
+y.ma <- gen_gts(1000,MA1(theta=.43, sigma2=1))
+wn <- gen_gts(1000,WN(sigma2=1))
+model.x <- .4*AR1(phi=.32,sigma2=1)+.5*MA1(theta=.43, sigma2=1)+ WN(sigma2=1)
+var.x <- gen_lts(1000,model=model.x)
+var.y=0.2*lag(x.ar)+0.1*lag(y.ma)+ wn
+var.xy <- cbind(var.x, var.y)
+colnames(var.xy)  <- c("x","y")
+var.xy <- var.xy[2:nrow(var.xy),]
+xy.ar <- ar(var.xy)
+xy.ar$ar
+```
+
+Not very successful, let's try this  using library `tsDyn` package
+
+
+
+
+```{r}
+library(tsDyn)
+```
+
+Now as we will use the `VAR.sim()` function from that package
+It implements the VAR model in Enders
+
+It starts from the structural VAR but then moved onto standard VAR 
+
+$$y_t=a_{10} + a_{11}y_{t-1}+a_{12}z_{t-1}+e_1t$$
+$$z_t=a_{20} + a_{21}y_{t-1}+a_{22}z_{t-1}+e_2t$$
+
+
+```{r}
+a10 <- a20 <- 0
+a11 <- a22 <- 0.7
+a12 <- a21 <- 0.2
+B1<-matrix(c(a11, a12, a21, a22), 2)
+var1<-VAR.sim(B=B1,n=100,include="none")
+colnames(var1) <- c("yt","zt")
+ts.plot(var1, type="l", col=c(1,2))
+```
+
+
+Let's estimate
+
+```{r}
+var.aic <- VAR(var1, type = "none", lag.max = 5, ic = "AIC")
+```
+
+Let's compare the original parameter and estimated values
+
+Original parameters
+
+```{r}
+B1
+```
+
+Estimated parameters
+
+```{r}
+coef(var.aic)
+```
+
+By comparison we find that the estimates are pretty close.
+
+Let's check other functions from `vars` package
+
+```{r}
+VARselect(var1)
+```
+
+The above selects 1 lag length according to SC which is more parsimonious. So we will follow that.
+
+
+Now let's try to reproduce the following from 
+
+`https://www.r-econometrics.com/timeseries/varintro/`
+
+
+```{r}
+set.seed(123) # Reset random number generator for reasons of reproducability
+# Generate sample
+t <- 200 # Number of time series observations
+k <- 2 # Number of endogenous variables
+p <- 2 # Number of lags
+
+# Generate coefficient matrices
+A.1 <- matrix(c(-.3, .6, -.4, .5), k) # Coefficient matrix of lag 1
+A.2 <- matrix(c(-.1, -.2, .1, .05), k) # Coefficient matrix of lag 2
+matA <- cbind(A.1, A.2) # Companion form of the coefficient matrices
+var2<-VAR.sim(B=matA,lag=2,n=200,include="none")
+colnames(var2) <- c("yt","zt")
+ts.plot(var2, type="l", col=c(1,2))
+```
+Now let's check whether it selects the right number of lags
+
+```{r}
+VARselect(var2)
+```
+
+Let's now estimate
+
+
+```{r}
+var.aic <- VAR(var2, type = "none", lag.max = 5, ic = "AIC")
+```
+
+Time for `IRF`
+
+
+```{r}
+ir.1 <- irf(var.aic, impulse = "yt", response = "zt", n.ahead = 20, ortho = FALSE)
+
+# Plot the IRF
+plot(ir.1)
+```
+
+
+
+
+Now let's do ITSR
+
+```{r}
+x <- y <- rep(0, 1000)
+x[1] <- wx[1]
+y[1] <- wy[1]
+for (i in 2:1000) {
+    x[i] <- 0.4 * x[i - 1] + 0.3 * y[i - 1] + wx[i]
+    y[i] <- 0.2 * x[i - 1] + 0.1 * y[i - 1] + wy[i]
+}
+xy.ar <- ar(cbind(x, y))
+xy.ar$ar[, , ]
+```
+
+
+
